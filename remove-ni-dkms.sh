@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # DKMS에 추가되거나 설치된 모든 NI (National Instruments) 드라이버 모듈을
-# 찾아 자동으로 삭제하는 스크립트입니다.
+# 찾아 자동으로 삭제하는 스크립트입니다. (대소문자 무시)
 #
 # 이 스크립트는 반드시 root 권한으로 실행해야 합니다. (e.g., sudo ./remove-ni-dkms.sh)
 
@@ -14,11 +14,11 @@ if [ "$EUID" -ne 0 ]; then
   exit 1
 fi
 
-echo "--- DKMS에 등록된 모든 NI 드라이버 모듈 삭제를 시작합니다 ---"
+echo "--- DKMS에 등록된 모든 NI 드라이버 모듈 삭제를 시작합니다 (대소문자 무시) ---"
 
-# dkms status 결과에서 'ni'로 시작하는 모든 모듈을 찾아 삭제
-# awk를 사용해 '모듈명/버전: 상태' 형식에서 ': ' 앞부분만 추출합니다.
-dkms status | grep '^ni' | awk -F': ' '{print $1}' | while read -r module
+# dkms status 결과에서 'ni' 또는 'Ni'로 시작하는 모든 모듈을 찾아 삭제
+# grep -i 옵션을 사용하여 대소문자를 구분하지 않습니다.
+dkms status | grep -i '^ni' | awk -F': ' '{print $1}' | while read -r module
 do
     if [ -n "$module" ]; then
         echo "==> 삭제 중: ${module}"
