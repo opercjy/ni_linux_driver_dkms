@@ -5,9 +5,6 @@
 #
 # 이 스크립트는 반드시 root 권한으로 실행해야 합니다. (e.g., sudo ./remove-ni-dkms.sh)
 
-# 스크립트 실행 중 오류가 발생하면 즉시 중단
-set -e
-
 # root 사용자인지 확인
 if [ "$EUID" -ne 0 ]; then
   echo "오류: 이 스크립트는 반드시 root 권한으로 실행해야 합니다. (sudo ./remove-ni-dkms.sh)"
@@ -16,14 +13,15 @@ fi
 
 echo "--- DKMS에 등록된 모든 NI 드라이버 모듈 삭제를 시작합니다 (대소문자 무시) ---"
 
-# dkms status 결과에서 'ni' 또는 'Ni'로 시작하는 모든 모듈을 찾아 삭제
-# grep -i 옵션을 사용하여 대소문자를 구분하지 않습니다.
-dkms status | grep -i '^ni' | awk -F': ' '{print $1}' | while read -r module
-do
-    if [ -n "$module" ]; then
-        echo "==> 삭제 중: ${module}"
-        dkms remove "${module}" --all
-    fi
+# dkms status 결과에서 'ni'로 시작하는 모듈의 이름/버전만 추출하고,
+# sort -u 명령으로 중복된 항목을 제거한 후 하나씩 삭제합니다.
+dkms status | grep -i '^ni' | awk -F, '{print $1}' | sort -u | while read -r module; do
+  if [ -n "$module" ]; then
+    echo "==> 삭제 중: ${module}"
+    # --all 옵션으로 모든 커널에서 해당 모듈을 삭제합니다.
+    # || true를 추가하여 모듈이 없다는 오류가 발생해도 스크립트가 중단되지 않도록 합니다.
+    dkms remove "${module}" --all || true
+  fi
 done
 
 echo ""
