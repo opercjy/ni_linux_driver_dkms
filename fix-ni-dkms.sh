@@ -27,7 +27,8 @@ echo "==> dkms.conf 파일 수정이 완료되었습니다."
 echo ""
 echo "==> 2단계: 모든 NI 모듈을 DKMS에 추가합니다..."
 # /usr/src 디렉토리에서 NI 드라이버 소스 폴더를 찾아 dkms add 명령을 실행합니다.
-for d in $(ls -d /usr/src/ni*-*f*/ 2>/dev/null); do
+# [Nn]i* 패턴을 사용하여 대소문자를 모두 검색합니다.
+for d in $(ls -d /usr/src/[Nn]i*-*f*/ 2>/dev/null); do
     echo "  -> 추가 중: ${d%/}"
     dkms add "${d%/}"
 done
